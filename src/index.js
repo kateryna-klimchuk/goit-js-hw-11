@@ -2,7 +2,7 @@ import './css/styles.css';
 import Notiflix from 'notiflix';
 import SimpleLightbox from "simplelightbox";
 import "simplelightbox/dist/simple-lightbox.min.css";
-const axios = require('axios');
+import axios from 'axios';
 
 const PIXABAY_KEY = '27448491-3edcbaaac83ebd1071ff4125b';
 const BASE_URL = 'https:pixabay.com/api';
@@ -28,22 +28,22 @@ function onCustomerInput(event) {
     pageCount = 1;
     const inputText = event.currentTarget.searchQuery.value;
     console.log(inputText);
-    axios.get(`${BASE_URL}/?key=${PIXABAY_KEY}&q=${inputText}&image_type=photo&orientation=horizontal&safesearch=true&per_page=40&page=${pageCount}`)
+    return axios.get(`${BASE_URL}/?key=${PIXABAY_KEY}&q=${inputText}&image_type=photo&orientation=horizontal&safesearch=true&per_page=40&page=${pageCount}`)
         .then(response => {
             const data = response.data;
             console.log(data);
             if (data.total === 0) {
+            loadMoreBtn.classList.add('hidden');
             return Notiflix.Notify.failure('Sorry, there are no images matching your search query. Please try again.');
             }
             Notiflix.Notify.success(`Hooray! We found ${data.total} images.`);
             markUpPhotoCard(data.hits);
             lightbox.refresh()
             loadMoreBtn.classList.remove('hidden');
-        })        
+        }).catch(error => {
+    console.log(error.response.data.error)
+    })     
 }
-
-console.log(formEl.children[0].value);
-
 
 function markUpPhotoCard(data) {
     const tagsData = data.map(({ largeImageURL, webformatURL, tags, likes, views, comments, downloads }) => {
@@ -83,6 +83,7 @@ function onLoadMorePhotos() {
                 return Notiflix.Notify.failure("We're sorry, but you've reached the end of search results.");
             }
             markUpPhotoCard(data.hits);
+            lightbox.refresh()
             loadMoreBtn.classList.remove('hidden');
         })
 }
