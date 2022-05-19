@@ -5,7 +5,7 @@ import "simplelightbox/dist/simple-lightbox.min.css";
 import axios from 'axios';
 
 const PIXABAY_KEY = '27448491-3edcbaaac83ebd1071ff4125b';
-const BASE_URL = 'https:pixabay.com/api';
+const BASE_URL = 'https://pixabay.com/api';
 let pageCount = 1;
 
 let lightbox = new SimpleLightbox('.gallery a', {
@@ -18,6 +18,7 @@ let lightbox = new SimpleLightbox('.gallery a', {
 const formEl = document.querySelector('.search-form');
 const galleryEl = document.querySelector('.gallery');
 const loadMoreBtn = document.querySelector('.load-more');
+
 loadMoreBtn.classList.add('hidden');
 loadMoreBtn.addEventListener('click', onLoadMorePhotos)
 formEl.addEventListener('submit', onCustomerInput);
@@ -41,13 +42,14 @@ function onCustomerInput(event) {
             lightbox.refresh()
             loadMoreBtn.classList.remove('hidden');
         }).catch(error => {
-    console.log(error.response.data.error)
+    console.log(error.toJSON())
     })     
 }
 
 function markUpPhotoCard(data) {
     const tagsData = data.map(({ largeImageURL, webformatURL, tags, likes, views, comments, downloads }) => {
-        return `<div class="photo-card"><a class="gallery__link" href=${largeImageURL}><img class="gallery__image" src="${webformatURL}" alt="${tags}" loading="lazy" /></a>
+    
+    return `<div class="photo-card"><a class="gallery__link" href=${largeImageURL}><img class="gallery__image" src="${webformatURL}" alt="${tags}" loading="lazy" /></a>
     <div class="info">
     <p class="info-item">
         <b>Likes</b>${likes}
