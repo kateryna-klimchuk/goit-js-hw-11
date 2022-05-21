@@ -45,7 +45,9 @@ async function onCustomerInput(event) {
     catch (error) {
         if (error.message === 'Request failed with status code 400') {
             hideLoader();
+            errorNotification();
         }
+        hideLoader();
     }
 }
 
@@ -62,6 +64,7 @@ async function onLoadMorePhotos() {
     try {
         const photoWithInfintyScroll = await axios.get(`${BASE_URL}/?key=${PIXABAY_KEY}&q=${inputValue}&image_type=photo&orientation=horizontal&safesearch=true&per_page=40&page=${pageCount}`)
         const data = photoWithInfintyScroll.data;
+
         if (data.hits.length === 0) {
             hideLoader();
             errorNotification();
@@ -73,7 +76,11 @@ async function onLoadMorePhotos() {
         hideLoader();
     }
     catch (error) {
-    hideLoader();
+        if (error.message === 'Request failed with status code 400') {
+        hideLoader();
+        errorNotification();
+    }
+        hideLoader();
 }
 }
 
