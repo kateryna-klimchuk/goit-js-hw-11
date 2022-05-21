@@ -5,6 +5,7 @@ import "simplelightbox/dist/simple-lightbox.min.css";
 import axios from 'axios';
 import {galleryEl, formEl} from './js/refs'
 import { markUpPhotoCard } from './js/markup'
+import {showLoader, hideLoader} from './js/loaders'
 
 const PIXABAY_KEY = '27448491-3edcbaaac83ebd1071ff4125b';
 const BASE_URL = 'https://pixabay.com/api';
@@ -18,7 +19,8 @@ let lightbox = new SimpleLightbox('.gallery a', {
 
 
 formEl.addEventListener('submit', onCustomerInput);
-window.addEventListener('scroll', infinityScroll);
+
+hideLoader();
 
 async function onCustomerInput(event) {
     event.preventDefault();
@@ -31,21 +33,31 @@ async function onCustomerInput(event) {
         if (response.total === 0 || inputText === '') {
             return Notiflix.Notify.failure('Sorry, there are no images matching your search query. Please try again.');
         }
+        showLoader();
         Notiflix.Notify.success(`Hooray! We found ${response.total} images.`);
+
         markUpPhotoCard(response.hits);
         lightbox.refresh();
+        observeLastfGalleryElement(galleryEl.querySelectorAll('.photo-card'));
+        hideLoader();
     }
 
     catch (error) {
-    Notiflix.Notify.failure('Sorry, there are no images matching your search query. Please try again.')
+        if (error.message === 'Request failed with status code 400') {
+            hideLoader();
+            return errorNotification();
+        }
+        hideLoader();
+    }
 }
-}
+
 
 function clearGallery() {
     galleryEl.innerHTML = '';
 }
 
 async function onLoadMorePhotos() {
+    showLoader();
 
     const inputValue = formEl.children[0].value;
     pageCount += 1;
@@ -53,24 +65,38 @@ async function onLoadMorePhotos() {
         const photoWithInfintyScroll = await axios.get(`${BASE_URL}/?key=${PIXABAY_KEY}&q=${inputValue}&image_type=photo&orientation=horizontal&safesearch=true&per_page=40&page=${pageCount}`)
         const data = photoWithInfintyScroll.data;
         if (data.hits.length === 0) {
-            return Notiflix.Notify.failure("We're sorry, but you've reached the end of search results.");
+            hideLoader();
+            return errorNotification();
         }
         markUpPhotoCard(data.hits);
         lightbox.refresh();
+        observeLastfGalleryElement(galleryEl.querySelectorAll('.photo-card'));
+        hideLoader();
     }
     catch (error) {
-    return Notiflix.Notify.failure("We're sorry, but you've reached the end of search results.");
+    hideLoader();
+    return errorNotification();
 }
 }
 
+function observeLastfGalleryElement(set) {
+    const options = {
+    root: null,
+    rootMargin: '0px',
+    threshold: 0.1
+    };
 
-function infinityScroll() {
-    const windowHeight = window.innerHeight;
-    const galleryPageHeight = galleryEl.offsetHeight;
-    const yOffset = window.pageYOffset;
-    const y = yOffset + windowHeight;
-
-    if (y >= galleryPageHeight) {
+    function handleImg(myImg, observer){
+        if (myImg[0].isIntersecting) {
         onLoadMorePhotos();
-    }
+    };
+    };
+
+    const observer = new IntersectionObserver(handleImg, options);
+    observer.observe(set[set.length - 1]);
+};
+
+
+function errorNotification() {
+    Notiflix.Notify.failure("We're sorry, but you've reached the end of search results.");
 }
