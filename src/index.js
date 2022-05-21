@@ -45,9 +45,7 @@ async function onCustomerInput(event) {
     catch (error) {
         if (error.message === 'Request failed with status code 400') {
             hideLoader();
-            return errorNotification();
         }
-        hideLoader();
     }
 }
 
@@ -66,7 +64,8 @@ async function onLoadMorePhotos() {
         const data = photoWithInfintyScroll.data;
         if (data.hits.length === 0) {
             hideLoader();
-            return errorNotification();
+            errorNotification();
+            return;
         }
         markUpPhotoCard(data.hits);
         lightbox.refresh();
@@ -75,7 +74,6 @@ async function onLoadMorePhotos() {
     }
     catch (error) {
     hideLoader();
-    return errorNotification();
 }
 }
 
